@@ -1,0 +1,110 @@
+# --- Project metadata and dependencies ---------------------------------------
+#
+# Deliberately minimal: every tool that can keep its configuration in a file of
+# its own does so (.ruff.toml, .mypy.ini). What remains here is what the
+# packaging standard requires plus the dependency groups.
+#
+# The laboratory works themselves live in notebooks/; this distribution exists
+# only to make the shared helpers in src/mllab importable from them.
+#
+# Recipes: `just sync`, `just lock`.
+
+
+# --- Build backend -----------------------------------------------------------
+# uv_build is the backend that ships with uv, so building requires no extra
+# dependency. The upper bound guards against a breaking change in the tool.
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+
+# --- Core metadata -----------------------------------------------------------
+
+[project]
+name = "mllab"
+version = "0.1.0"
+description = "Laboratory works for the Machine Learning course, ULSTU, variant 20"
+requires-python = ">=3.12"
+
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+
+authors = [
+    { name = "Factorino", email = "masenkin73@gmail.com" },
+]
+
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Private :: Do Not Upload",
+    "Typing :: Typed",  # Backed by src/mllab/py.typed.
+]
+
+
+# --- Runtime dependencies ----------------------------------------------------
+# What the helper package and the notebooks of works 1-6 import. The deep
+# learning stack of work 7 is an opt-in group below, because tensorflow alone
+# outweighs everything here several times over.
+#
+# Data is downloaded with urllib from the standard library, so no HTTP client
+# appears here.
+
+dependencies = [
+    "matplotlib>=3.10.0",
+    "numpy>=2.2.0",
+    "pandas>=2.3.0",
+    "scikit-learn>=1.6.0",
+    "scipy>=1.15.0",
+    "seaborn>=0.13.0",
+]
+
+
+# --- Dependency groups -------------------------------------------------------
+# Groups, not extras: these are development tools, never part of a release.
+
+[dependency-groups]
+
+# Linting and type checking. The stub packages are mandatory rather than
+# optional: .mypy.ini sets ignore_missing_imports = False.
+dev = [
+    "mypy>=1.14.0",
+    "pandas-stubs>=2.2.0",
+    "pre-commit>=4.0.0",
+    "ruff>=0.14.0",
+]
+
+# Running the works. Separate from `dev` so that a lint-only environment in CI
+# does not have to build JupyterLab.
+notebook = [
+    "ipykernel>=6.29.0",
+    "jupyterlab>=4.3.0",
+    "notebook>=7.3.0",
+]
+
+# Work 7 only: the recurrent network and text generation. Keras 3 needs a
+# backend; tensorflow is the one the course textbook is written against.
+# Install with `just sync-dl`, which is what work 7 expects.
+dl = [
+    "keras>=3.8.0",
+    "tensorflow>=2.18.0",
+]
+
+
+# --- uv ----------------------------------------------------------------------
+# `dl` is excluded from the default groups on purpose: works 1-6 must sync in
+# seconds. `uv sync --group dl` adds it when work 7 comes around.
+
+[tool.uv]
+default-groups = ["dev", "notebook"]
+
+
+# --- Package discovery -------------------------------------------------------
+# src layout: the import name matches the distribution name.
+
+[tool.uv.build-backend]
+module-name = "mllab"
+module-root = "src"

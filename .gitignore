@@ -1,0 +1,122 @@
+# --- Git ignore rules --------------------------------------------------------
+#
+# Grouped by what produces the files. Anything a tool can regenerate stays out
+# of the repository; the one deliberate exception is notebook cell outputs,
+# which are the result of the works and are committed (see .gitattributes).
+
+
+# --- Byte-compiled files -----------------------------------------------------
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+
+# --- Packaging and distribution ----------------------------------------------
+
+build/
+dist/
+sdist/
+wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+MANIFEST
+
+
+# --- Virtual environments ----------------------------------------------------
+# uv owns .venv/; the others are here in case a tool creates one by habit.
+
+.venv/
+venv/
+env/
+ENV/
+.python-version.local
+
+
+# --- Tool caches -------------------------------------------------------------
+
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytest_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+
+
+# --- Jupyter -----------------------------------------------------------------
+# Checkpoints are Jupyter's own autosave copies, not versions of the work.
+# A kernel connection file carries a local port and a session key.
+
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+.jupyter/
+.local/
+profile_default/
+ipython_config.py
+kernel-*.json
+
+
+# --- Datasets ----------------------------------------------------------------
+# Everything under data/ is downloaded by mllab.datasets on first use, so the
+# repository stays small and no third-party dataset is redistributed here.
+# data/.gitkeep is negated below so the directory itself survives a clone.
+
+data/*
+!data/.gitkeep
+
+
+# --- Trained models and run artefacts ----------------------------------------
+# Work 7 writes checkpoints and samples; they are reproducible from the
+# notebook and far too large to version.
+
+*.h5
+*.keras
+*.ckpt
+*.pt
+*.pth
+*.joblib
+*.pkl
+logs/
+runs/
+checkpoints/
+
+
+# --- Figures exported from notebooks -----------------------------------------
+# Plots belong in the notebook outputs. A separately exported copy is a
+# convenience for a report, not a source file.
+
+figures/
+*.svg
+
+
+# --- Operating system and editors --------------------------------------------
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+
+# --- Secrets -----------------------------------------------------------------
+
+.env
+.env.*
+!.env.example
+.secrets/
+*.pem
+*.key
+kaggle.json

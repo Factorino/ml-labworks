@@ -1,0 +1,131 @@
+# --- Pre-commit hooks --------------------------------------------------------
+#
+# Two kinds of hooks. Language-independent ones come from upstream hook
+# repositories. The project tooling is wired as `repo: local` running through
+# `uv run`, not through mirrors such as ruff-pre-commit: a mirror pins the tool
+# version in its `rev:` field, in parallel with uv.lock, and the two inevitably
+# drift apart. This way the hooks and `just lint` provably use the same ruff
+# and the same mypy.
+#
+# Related files:
+#   - .ruff.toml, .mypy.ini    configure the local hooks
+#
+# Install: `just hooks`. Run over everything: `just pre-commit`.
+# Update: `pre-commit autoupdate`.
+
+minimum_pre_commit_version: "4.0.0"
+
+
+# --- Installed stages --------------------------------------------------------
+# Cheap checks run on commit, the message check on commit-msg. There is no
+# pre-push stage: this project has no test suite to defer to it.
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+# A hook that declares no stages of its own would otherwise run on every
+# installed stage, repeating all the linters. The commit message hook declares
+# commit-msg in its own manifest.
+default_stages:
+  - pre-commit
+
+
+repos:
+  # --- Generic file hygiene --------------------------------------------------
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # The default limit is 500 KB, which a notebook carrying a dozen rendered
+      # plots exceeds without being wrong. Raised rather than removed, so a
+      # dataset committed by accident is still caught.
+      - id: check-added-large-files
+        args: [--maxkb=4096]
+      - id: check-case-conflict  # Names that collide on case-insensitive filesystems.
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        # Jupyter writes notebooks without a trailing newline; adding one makes
+        # a diff on every save for no benefit.
+        exclude: \.ipynb$
+      - id: mixed-line-ending
+        args: [--fix=lf]  # Matches `* text=auto eol=lf` in .gitattributes.
+      - id: trailing-whitespace
+        # Two trailing spaces in Markdown are a hard line break, not noise.
+        # The same exception is declared in .editorconfig.
+        args: [--markdown-linebreak-ext=md]
+        exclude: \.ipynb$
+
+  # --- Notebook hygiene ------------------------------------------------------
+  # Outputs are kept on purpose, so no stripping hook is configured. This one
+  # only verifies that the JSON is a notebook Jupyter can still open.
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        name: nbstripout (metadata only)
+        # Cell outputs, execution counts and the kernel are all retained: they
+        # are the record of the work. Only the volatile editor metadata that
+        # JupyterLab rewrites on every save is dropped, which is what keeps a
+        # notebook diff readable.
+        args:
+          - --keep-output
+          - --keep-count
+          - --keep-id
+          - --extra-keys=metadata.kernelspec metadata.widgets cell.metadata.ExecuteTime
+
+  # --- Commit messages -------------------------------------------------------
+  # Conventional Commits, verified rather than trusted. The hook comes from the
+  # commitizen repository itself, so it needs no project virtualenv.
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.18.1
+    hooks:
+      - id: commitizen
+
+  # --- Project tooling -------------------------------------------------------
+  # `language: system` means the hook runs the tool from the project virtualenv
+  # instead of an isolated one, so versions come from uv.lock. This also avoids
+  # the classic mypy-in-pre-commit problem of not seeing project dependencies.
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+
+      # mypy analyses the project as a whole; feeding it only the changed files
+      # would give wrong answers, hence pass_filenames: false. The directory
+      # must match `just lint`.
+      - id: mypy
+        name: mypy
+        entry: uv run mypy src
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false
+        require_serial: true
+
+      # uv.lock must stay in step with pyproject.toml, otherwise
+      # `uv sync --locked` fails on a fresh clone.
+      - id: uv-lock
+        name: uv lock
+        entry: uv lock
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false

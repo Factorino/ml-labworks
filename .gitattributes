@@ -1,0 +1,56 @@
+# --- Git attributes ----------------------------------------------------------
+#
+# Line ending normalisation, diff behaviour and archive contents.
+#
+# Related files:
+#   - .editorconfig            same line ending rule, for editors
+#   - .pre-commit-config.yaml  mixed-line-ending --fix=lf enforces it on commit
+#
+# Note: this format has no inline comments — a comment occupies a whole line.
+
+
+# --- Line endings ------------------------------------------------------------
+# Everything is stored and checked out with LF, including on Windows.
+
+* text=auto eol=lf
+
+
+# --- Diff drivers ------------------------------------------------------------
+# Gives Python hunks a meaningful header (the enclosing def or class).
+
+*.py text diff=python
+
+
+# --- Notebooks ---------------------------------------------------------------
+# A notebook is JSON holding both the work and its rendered outputs, so merging
+# two versions line by line produces a file Jupyter cannot open. `merge=binary`
+# turns a conflict into an explicit "take one side" decision, which is the only
+# correct resolution. Cell outputs are committed deliberately: the plots and
+# metrics are the result of the work and must be readable in the repository
+# without re-running anything, so no output-stripping filter is configured.
+
+*.ipynb text merge=binary linguist-documentation=true
+
+
+# --- Binary files ------------------------------------------------------------
+# Never normalise or attempt to merge these.
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.h5 binary
+*.keras binary
+*.npy binary
+*.npz binary
+
+
+# --- GitHub classification ---------------------------------------------------
+# The lock file is generated: GitHub collapses it in diffs and leaves it out of
+# the language statistics. A textual diff is deliberately kept — lock changes
+# occasionally need to be read by a human.
+
+uv.lock linguist-generated=true
