@@ -95,6 +95,7 @@ clean:
     rm -rf .ruff_cache .mypy_cache .pytest_cache
     find . -path ./.venv -prune -o -name __pycache__ -type d -print0 | xargs -0 rm -rf
     find . -path ./.venv -prune -o -name .ipynb_checkpoints -type d -print0 | xargs -0 rm -rf
+    find . -path ./.venv -prune -o -name 'kernel-ipc-*' -type s -print0 | xargs -0 rm -f
 
 # Delete every cached dataset; the next run downloads them again.
 [group('maintenance')]
