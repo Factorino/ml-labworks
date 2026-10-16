@@ -48,6 +48,11 @@ hooks:
 
 # --- Running the works -------------------------------------------------------
 
+# Download every dataset into data/; those already cached are left alone.
+[group('run')]
+data:
+    uv run python -c "from mllab.datasets import fetch_all; fetch_all()"
+
 # Open JupyterLab in notebooks/.
 [group('run')]
 lab:
