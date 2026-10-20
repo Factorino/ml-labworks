@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Any
 
 from matplotlib.axes import Axes
@@ -142,3 +143,65 @@ def class_legend(
         fontsize=fontsize,
         frameon=False,
     )
+
+
+def draw_clusters(
+    ax: Axes,
+    points: NDArray[np.float64],
+    labels: NDArray[np.int_],
+    centers: Mapping[int, NDArray[np.float64]],
+    colors: Mapping[int, str],
+) -> None:
+    for label, color in colors.items():
+        members = points[labels == label]
+        ax.scatter(
+            members[:, 0],
+            members[:, 1],
+            color=color,
+            s=28,
+            alpha=0.85,
+            edgecolors="white",
+            linewidths=0.6,
+            label=f"кластер {label}",
+        )
+
+    for label, center in centers.items():
+        ax.scatter(
+            center[0],
+            center[1],
+            marker="X",
+            s=110,
+            color=colors[label],
+            edgecolors="k",
+            linewidths=1.0,
+        )
+        ax.annotate(
+            str(label),
+            (center[0], center[1]),
+            xytext=(7, 5),
+            textcoords="offset points",
+            fontsize=10,
+            fontweight="bold",
+        )
+
+
+def draw_silhouette(
+    ax: Axes,
+    values: NDArray[np.float64],
+    labels: NDArray[np.int_],
+    colors: Mapping[int, str],
+    *,
+    gap: int = 4,
+) -> None:
+    bottom = 0
+    for label, color in colors.items():
+        cluster_values = np.sort(values[labels == label])
+        rows = np.arange(bottom, bottom + len(cluster_values))
+        ax.fill_betweenx(rows, 0, cluster_values, color=color, linewidth=0)
+        ax.text(-0.03, bottom + len(cluster_values) / 2, str(label), ha="right", va="center")
+        bottom += len(cluster_values) + gap
+
+    ax.axvline(float(values.mean()), color="k", linestyle="--", linewidth=1.0)
+    ax.set_xlim(min(0.0, float(values.min())) - 0.08, 1.0)
+    ax.set_ylim(-gap, bottom)
+    ax.set_yticks(())
