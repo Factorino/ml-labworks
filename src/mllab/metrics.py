@@ -3,6 +3,7 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 import pandas as pd
+from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -35,3 +36,11 @@ def ranking_table(scores: Mapping[str, ArrayLike], names: Sequence[str]) -> pd.D
 
 def top_features(table: pd.DataFrame, count: int = 4) -> list[str]:
     return [str(name) for name in table[MEAN_COLUMN].nlargest(count).index]
+
+
+def regression_report(y_true: ArrayLike, y_pred: ArrayLike) -> dict[str, float]:
+    return {
+        "R²": float(r2_score(y_true, y_pred)),
+        "MAE": float(mean_absolute_error(y_true, y_pred)),
+        "RMSE": float(root_mean_squared_error(y_true, y_pred)),
+    }
