@@ -30,7 +30,7 @@ _default:
 sync:
     uv sync --locked
 
-# Add the deep learning stack that work 7 needs (keras, tensorflow; ~600 MB).
+# Add the deep learning stack that work 7 needs (keras, tensorflow with CUDA; ~6 GB).
 [group('deps')]
 sync-dl:
     uv sync --locked --group dl
