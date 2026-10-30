@@ -180,7 +180,7 @@ ignore-variadic-names = true
 "notebooks/*.ipynb" = [
     "ANN",  # Annotations on throwaway cell-level helpers.
     "B018",  # A bare expression is how a cell renders its result.
-    "D103",  # Docstrings on cell-level helpers.
+    "D101", "D103",  # Docstrings on cell-level helpers and record types.
     "E402",  # Imports after the introductory markdown and setup cells.
     "ERA001",  # Commented-out code is often a deliberately kept alternative.
     "INP001",  # notebooks/ is not a package and must not become one.

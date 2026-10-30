@@ -6,6 +6,7 @@ from zipfile import ZipFile
 import pandas as pd
 
 from mllab import DATA_DIR
+from mllab.text import load_english, load_russian
 
 
 KAGGLE_DOWNLOAD = "https://www.kaggle.com/api/v1/datasets/download/{slug}"
@@ -50,3 +51,5 @@ def load_titanic() -> pd.DataFrame:
 def fetch_all() -> None:
     load_tesla()
     load_titanic()
+    load_russian()
+    load_english()
